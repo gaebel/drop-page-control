@@ -46,7 +46,7 @@ class DemoViewController: UIViewController {
 
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         pageControl.numberOfPages = 4
-        pageControl.currentPage = 1
+        pageControl.currentPage = 0
         pageControl.scrollView = scrollView
         view.addSubview(pageControl)
 
