@@ -1,9 +1,10 @@
 # DropPageControl
 
-ScrollView page control with custom shapes
+ScrollView page control with custom shapes.
 
-![Screen Recording 2020-06-19 at 23 33 10](https://user-images.githubusercontent.com/15332731/85181534-79f9d780-b286-11ea-8b74-1369273cd55c.gif)
+![Demo](https://user-images.githubusercontent.com/15332731/85222569-736d7c00-b3bc-11ea-806f-4f45f15d2714.gif)
 
 ## Todo
 
+- [x] Handle both directions
 - [ ] Refactoring
