@@ -23,7 +23,8 @@ class DemoViewController: UIViewController {
         scrollView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 300)
         scrollView.isPagingEnabled = true
         scrollView.contentSize = CGSize(width: view.frame.width * 4, height: 300)
-
+        scrollView.delegate = self
+        
         for index in 0...3 {
             let bgview = UIView(frame: CGRect(x: view.frame.width * CGFloat(index), y: 0,
                                               width: view.frame.width,
@@ -54,5 +55,14 @@ class DemoViewController: UIViewController {
             pageControl.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+    }
+}
+
+extension DemoViewController: UIScrollViewDelegate {
+
+    // MARK: - UIScrollViewDelegate
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        pageControl.animate()
     }
 }
