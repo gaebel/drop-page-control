@@ -28,13 +28,10 @@ class PageControl: UIPageControl {
         }
     }
 
-    var scrollView: UIScrollView? {
-        didSet {
-            scrollView?.delegate = self
-        }
-    }
+    var scrollView: UIScrollView?
 
     private(set) var direction: Direction = .forward
+    private(set) var lastContentOfsset: CGFloat = 0
 
     private var previousLayer: CAShapeLayer?
     private var currentLayer: CAShapeLayer?
@@ -50,10 +47,13 @@ class PageControl: UIPageControl {
         case backward
     }
 
-    // Drawing
+    override func draw(_ rect: CGRect) {
+        super.draw(rect)
 
-    override func draw(_ layer: CALayer, in ctx: CGContext) {
-        super.draw(layer, in: ctx)
+        if isSetup == false {
+            drawStaticCircles()
+            isSetup = true
+        }
 
         previousLayer?.removeFromSuperlayer()
         previousLayer = nil
@@ -67,7 +67,9 @@ class PageControl: UIPageControl {
 
         let currentLayer = makeDropletShape(with: .slide)
 
-        if scrollView!.contentOffset.x > (CGFloat(currentPage) * scrollView!.frame.width) {
+        guard let scrollView = scrollView else { return }
+
+        if scrollView.contentOffset.x > (CGFloat(currentPage) * scrollView.frame.width) {
             guard currentPage != numberOfPages - 1 else { return }
             subviews[ currentPage + 1].layer.addSublayer(currentLayer)
         } else  {
@@ -78,16 +80,33 @@ class PageControl: UIPageControl {
         self.currentLayer = currentLayer
     }
 
-    override func draw(_ rect: CGRect) {
-        super.draw(rect)
+    func animate() {
+        guard let scrollView = scrollView else { return }
 
-        if isSetup == false {
-            drawStaticCircles()
-            isSetup = true
+        if lastContentOfsset < scrollView.contentOffset.x { direction = .forward } else { direction = .backward}
+
+        if direction == .forward {
+            if scrollView.contentOffset.x >= CGFloat(currentPage + 1) * scrollView.frame.width {
+                if percent > -1 { currentPage = Int(lround(Double(scrollView.contentOffset.x / scrollView.frame.width))) }
+            }
         }
+
+        if direction == .backward {
+            if scrollView.contentOffset.x <= ((CGFloat(currentPage - 1) * scrollView.frame.width)) {
+                if percent > -1 { currentPage = Int(lround(Double(scrollView.contentOffset.x / scrollView.frame.width))) }
+            }
+        }
+
+        let startOffset = (CGFloat(currentPage) * scrollView.frame.size.width)
+        let scrollViewOffset = abs(scrollView.contentOffset.x - startOffset)
+        let scrollViewHalf = scrollView.frame.size.width / 2
+
+        self.percent = (1 - scrollViewOffset / scrollViewHalf)
+
+        lastContentOfsset = scrollView.contentOffset.x
     }
 
-    func drawStaticCircles() {
+    private func drawStaticCircles() {
         self.transform = CGAffineTransform.init(scaleX: scale, y:  scale)
 
         self.subviews.forEach {
@@ -97,7 +116,7 @@ class PageControl: UIPageControl {
 
     // MARK: - Factories
 
-    func makeCircleShape() -> CAShapeLayer {
+    private func makeCircleShape() -> CAShapeLayer {
         let shape = CAShapeLayer()
         let rect = CGRect(x: 0, y: 0, width: size, height: size)
         let path = UIBezierPath(ovalIn: rect).cgPath
@@ -108,7 +127,7 @@ class PageControl: UIPageControl {
         return shape
     }
 
-    func makeDropletShape(with mode: Mode) -> CAShapeLayer {
+    private func makeDropletShape(with mode: Mode) -> CAShapeLayer {
         let halfSize = CGSize(width: self.size / 2, height: self.size / 2)
 
         var path: UIBezierPath
@@ -201,39 +220,5 @@ class PageControl: UIPageControl {
 
     private func radians(of degrees: CGFloat) -> CGFloat {
         degrees / 180 * .pi
-    }
-    var lastContentOfsset: CGFloat = 0
-    var isScrolling = false
-    var currentOffset: CGFloat = 0
-    var startOffset = 0
-    var lock = false
-}
-
-extension PageControl: UIScrollViewDelegate {
-
-    // MARK: - UIScrollViewDelegate
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if lastContentOfsset < scrollView.contentOffset.x { direction = .forward } else { direction = .backward}
-
-        if direction == .forward {
-            if scrollView.contentOffset.x >= CGFloat(currentPage + 1) * scrollView.frame.width {
-                if percent > -1 { currentPage = Int(lround(Double(scrollView.contentOffset.x / scrollView.frame.width))) }
-            }
-        }
-
-        if direction == .backward {
-            if scrollView.contentOffset.x <= ((CGFloat(currentPage - 1) * scrollView.frame.width)) {
-                if percent > -1 { currentPage = Int(lround(Double(scrollView.contentOffset.x / scrollView.frame.width))) }
-            }
-        }
-
-        let startOffset = (CGFloat(currentPage) * scrollView.frame.size.width)
-        let scrollViewOffset = abs(scrollView.contentOffset.x - startOffset)
-        let scrollViewHalf = scrollView.frame.size.width / 2
-
-        self.percent = (1 - scrollViewOffset / scrollViewHalf)
-
-        lastContentOfsset = scrollView.contentOffset.x
     }
 }

@@ -7,4 +7,4 @@ ScrollView page control with custom shapes.
 ## Todo
 
 - [x] Handle both directions
-- [ ] Refactoring
+- [x] Refactoring
